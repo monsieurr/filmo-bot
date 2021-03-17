@@ -103,8 +103,9 @@ if __name__ == "__main__":
     api = connect_to_twitter_simple()
     select_random_function = random.randint(0, 2)
 
-    topic = "#"+str(randomnb)
+    #topic = "#"+str(randomnb)
     movie_folder = mv.get_random_folder()
+    topic = movie_folder
     print("MOVIE FOLDER : "+movie_folder)
 
 

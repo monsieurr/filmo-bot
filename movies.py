@@ -27,6 +27,10 @@ def get_four_random_screens(folder):
         screens[i] = random.choice(os.listdir("movies/"+folder+"/screens/"))
         print(screens[i])
         i = i + 1
+
+    final_screens = list(dict.fromkeys(screens))
+    print("ELEMENTS UNIQUES SEULEMENT : " + str(final_screens))
+
     return screens
 
 # get one, two, three, or four random screens in a folder
@@ -38,7 +42,11 @@ def get_x_random_screens(folder):
         screens.append(random.choice(os.listdir("movies/"+folder+"/screens/")))
         print(screens[i])
         i = i + 1
-    return screens
+
+    final_screens = list(dict.fromkeys(screens))
+    print("ELEMENTS UNIQUES SEULEMENT : " + str(final_screens))
+
+    return final_screens
 
 # get a random movie quote from the chosen random folder (movie)
 def get_movie_quote(file):
