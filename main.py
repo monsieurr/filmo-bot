@@ -3,6 +3,7 @@ import tweepy
 from os.path import join, dirname
 from dotenv import load_dotenv
 import random
+import movies as mv
 
 # Global variables
 dotenv_path = join(dirname(__file__), '.env')
@@ -51,13 +52,38 @@ def send_tweet_with_media(api, topic, media):
     media_id = media.media_id_string
     api.update_status(topic, media_ids=[media_id])
 
-    # printing the dimensions
-    print("The width is : " + str(media.image['w']) + " pixels.")
-    print("The height is : " + str(media.image['h']) + " pixels.")
+def send_tweet_with_media(api, topic, movie_folder, screens): 
+    twitter_text = "test"
+    screen_upload = []
+
+    for index, screen in enumerate(screens):
+        print(index, screen)
+        print("screen to be uploaded : " + screen)
+        print(type(screen))
+        screen_upload.append(api.media_upload("movies/"+movie_folder+"/screens/"+screen))
+
+    media_id = []
+
+    for screen in screen_upload:
+        # printing the information
+        print("The media ID is : " + screen.media_id_string)
+        print("The size of the file is : " + str(screen.size) + " bytes")
+        
+        media_id.append(screen.media_id_string)
+
+        # printing the dimensions
+        print("The width is : " + str(screen.image['w']) + " pixels.")
+        print("The height is : " + str(screen.image['h']) + " pixels.")
+
+    print(media_id)
+    api.update_status(topic, media_ids=[*media_id])
+    
+        # printing the information
+    #api.update_status(topic, media_ids=[medias_id[0], medias_id[1], medias_id[2], medias_id[3]])
 
 
-def select_image():
-    choice = random.choice(os.listdir("images"))  # change dir name to whatever
+def select_movie():
+    choice = random.choice(os.listdir("movies/"))  # change dir name to whatever
     print(choice)
     return choice
 
@@ -75,14 +101,28 @@ def remove_image(choice):
 if __name__ == "__main__":
     randomnb = random.randint(0, 1000)
     api = connect_to_twitter_simple()
+    select_random_function = random.randint(0, 2)
 
     topic = "#"+str(randomnb)
-    media = select_image()
-    print(media)
+    movie_folder = mv.get_random_folder()
+    print("MOVIE FOLDER : "+movie_folder)
+
+
+    if(select_random_function == 0):
+        screens = mv.get_x_random_screens(movie_folder)
+        print("SCREEN CHOSEN : "+str(screens))
+    elif(select_random_function == 1):
+        screens = mv.get_four_random_screens(movie_folder)
+        print("SCREENS CHOSEN : "+str(screens))
+    elif(select_random_function == 2):
+        screens = mv.get_x_random_screens(movie_folder)
+        print("SCREENS CHOSEN : "+str(screens))
+    else:
+        print("Erreur de traitement, la valeur de select_random_function doit être entre 0 et 2")
 
     try:
-        send_tweet_with_media(api, topic, media)
-        remove_image(media)
+        send_tweet_with_media(api, topic, movie_folder, screens)
+        #remove_image(media)
         #send_tweet(api, topic)
         print("DONE")
     except tweepy.TweepError as e:
