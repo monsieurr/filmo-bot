@@ -4,6 +4,8 @@ from os.path import join, dirname
 from dotenv import load_dotenv
 import random
 import movies as mv
+import imgur_engine as ie
+import requests
 
 # Global variables
 dotenv_path = join(dirname(__file__), '.env')
@@ -12,6 +14,8 @@ CONSUMER_KEY = os.getenv('CONSUMER_KEY')
 CONSUMER_SECRET = os.getenv('CONSUMER_SECRET')
 ACCESS_TOKEN = os.getenv('ACCESS_TOKEN')
 ACCESS_TOKEN_SECRET = os.getenv('ACCESS_TOKEN_SECRET')
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
 # API Authentication
 
 
@@ -88,6 +92,53 @@ def select_movie():
     return choice
 
 
+def send_tweet_movie_from_imgur(api, headers, albumHashes):
+    album_data = ie.get_album(headers, albumHashes[0])
+    screen_upload = []
+
+    print("TITRE : ", album_data["title"])
+    print("DESCRIPTION : ", album_data["description"])
+    print("RANDOM_LINK : ", album_data["links"][2])
+    print(len(album_data["links"]))
+
+    topic = album_data["title"]
+
+    selected_screens = []
+    i = 0
+    while i < 4:
+        selected_screens.append(random.choice(album_data["links"]))
+        i += 1
+
+    for index, screen in enumerate(selected_screens):
+        print(index, screen)
+        print("screen to be uploaded : " + screen)
+        print(type(screen))
+
+        print("SCREEN LINK : ", selected_screens[index])
+        response = requests.get(selected_screens[index])
+        file = open("output.jpg", "wb")
+        file.write(response.content)
+        screen_upload.append(api.media_upload("output.jpg"))
+        file.close()
+
+    
+    media_id = []
+
+    for screen in screen_upload:
+        # printing the information
+        print("The media ID is : " + screen.media_id_string)
+        print("The size of the file is : " + str(screen.size) + " bytes")
+
+        media_id.append(screen.media_id_string)
+
+        # printing the dimensions
+        print("The width is : " + str(screen.image['w']) + " pixels.")
+        print("The height is : " + str(screen.image['h']) + " pixels.")
+
+
+    api.update_status(topic, media_ids=[*media_id])
+    
+
 def remove_image(choice):
     try:
         os.remove("images/"+choice)
@@ -99,32 +150,48 @@ def remove_image(choice):
 
 # Main functions
 if __name__ == "__main__":
+    online_method = True
     randomnb = random.randint(0, 1000)
     api = connect_to_twitter_simple()
     select_random_function = random.randint(0, 2)
 
-    #topic = "#"+str(randomnb)
-    movie_folder = mv.get_random_folder()
-    topic = movie_folder
-    print("MOVIE FOLDER : "+movie_folder)
+    if(online_method):
+        headers = {
+            'Authorization': 'Client-ID '+CLIENT_ID,
+        }
 
+        #topic = "#"+str(randomnb)
+        ## LIST OF MOVIES 
+        # Hackers, Suspiria, Stranges Days, Sonatine
+        albumHashes = ['mVpQSPC', 'tZ9YnPa', 'eixU9wY', 'yOHZosa']
 
-    if(select_random_function == 0):
-        screens = mv.get_x_random_screens(movie_folder)
-        print("SCREEN CHOSEN : "+str(screens))
-    elif(select_random_function == 1):
-        screens = mv.get_four_random_screens(movie_folder)
-        print("SCREENS CHOSEN : "+str(screens))
-    elif(select_random_function == 2):
-        screens = mv.get_x_random_screens(movie_folder)
-        print("SCREENS CHOSEN : "+str(screens))
+        try:
+            send_tweet_movie_from_imgur(api, headers, albumHashes)
+            print("DONE")
+        except tweepy.TweepError as e:
+            print("ERROR WHILE SENDING THE TWEET : " + str(e))
+
     else:
-        print("Erreur de traitement, la valeur de select_random_function doit être entre 0 et 2")
+        movie_folder = mv.get_random_folder()
+        topic = movie_folder
+        print("MOVIE FOLDER : "+movie_folder)
 
-    try:
-        send_tweet_with_media(api, topic, movie_folder, screens)
-        #remove_image(media)
-        #send_tweet(api, topic)
-        print("DONE")
-    except tweepy.TweepError as e:
-        print("ERROR WHILE SENDING THE TWEET : " + str(e))
+        if(select_random_function == 0):
+            screens = mv.get_x_random_screens(movie_folder)
+            print("SCREEN CHOSEN : "+str(screens))
+        elif(select_random_function == 1):
+            screens = mv.get_four_random_screens(movie_folder)
+            print("SCREENS CHOSEN : "+str(screens))
+        elif(select_random_function == 2):
+            screens = mv.get_x_random_screens(movie_folder)
+            print("SCREENS CHOSEN : "+str(screens))
+        else:
+            print("Erreur de traitement, la valeur de select_random_function doit être entre 0 et 2")
+
+        try:
+            #send_tweet_with_media(api, topic, movie_folder, screens)
+            #remove_image(media)
+            #send_tweet(api, topic)
+            print("DONE")
+        except tweepy.TweepError as e:
+            print("ERROR WHILE SENDING THE TWEET : " + str(e))
