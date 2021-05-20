@@ -93,12 +93,14 @@ def select_movie():
 
 
 def send_tweet_movie_from_imgur(api, headers, albumHashes):
-    album_data = ie.get_album(headers, albumHashes[0])
+    random_album = random.randint(0, len(albumHashes)-1)
+    album_data = ie.get_album(headers, albumHashes[random_album])
     screen_upload = []
+    print(len(album_data["links"]))
 
     print("TITRE : ", album_data["title"])
     print("DESCRIPTION : ", album_data["description"])
-    print("RANDOM_LINK : ", album_data["links"][2])
+    print("RANDOM_LINK : ", album_data["links"][random_album])
     print(len(album_data["links"]))
 
     topic = album_data["title"]
@@ -150,6 +152,7 @@ def remove_image(choice):
 
 # Main functions
 if __name__ == "__main__":
+    print(type(CLIENT_ID))
     online_method = True
     randomnb = random.randint(0, 1000)
     api = connect_to_twitter_simple()
@@ -157,7 +160,7 @@ if __name__ == "__main__":
 
     if(online_method):
         headers = {
-            'Authorization': 'Client-ID '+CLIENT_ID,
+            'Authorization': 'Client-ID '+str(CLIENT_ID)
         }
 
         #topic = "#"+str(randomnb)
