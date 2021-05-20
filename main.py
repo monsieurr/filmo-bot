@@ -162,8 +162,9 @@ if __name__ == "__main__":
 
         #topic = "#"+str(randomnb)
         ## LIST OF MOVIES 
-        # Hackers, Suspiria, Stranges Days, Sonatine
-        albumHashes = ['mVpQSPC', 'tZ9YnPa', 'eixU9wY', 'yOHZosa']
+        # Hackers, Suspiria, Stranges Days, Sonatine, Hardware, Mishima, Police Story, The Prize of Peril, Escape from New York, Steak
+        albumHashes = ['mVpQSPC', 'tZ9YnPa',
+                       'eixU9wY', 'yOHZosa', 'mzcW0na', 'ppfwXll', '5IKKVqp', 'fxYd5Hr', 'JbYH851', 'WxPjTxI']
 
         try:
             send_tweet_movie_from_imgur(api, headers, albumHashes)
